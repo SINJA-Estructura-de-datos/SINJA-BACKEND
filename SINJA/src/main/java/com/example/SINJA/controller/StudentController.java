@@ -46,7 +46,16 @@ public class StudentController {
     }
 
     @DeleteMapping("/delete")
-    public void deleteById(@RequestParam Long id){
-        studentService.deleteById(id);
+    public ResponseEntity<Object> deleteById(@RequestParam Long id){
+        try {
+            boolean eliminado = studentService.deleteById(id);
+            if (eliminado) {
+                return ResponseEntity.noContent().build(); // 204 eliminado
+            } else {
+                return ResponseEntity.notFound().build(); // 404 si no existe
+            }
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build(); // 500 si falla
+        }
     }
 }

@@ -28,9 +28,52 @@ public class StudentsRepositoryImpl implements StudentsRepository {
     }
 
     @Override
-    public void delete(Long id) {
+    public boolean delete(Long id) {
+        File students = new File("SINJA/src/main/resources/Students");
+        File temp = new File("SINJA/src/main/resources/temp.txt");
+
+        boolean deleted = false;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(students));
+             BufferedWriter writer = new BufferedWriter(new FileWriter(temp))) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] data = line.split("\t");
+
+                if (Long.parseLong(data[0]) == id) {
+                    log.info("Estudiante con id={} fue encontrado y eliminado", id);
+                    deleted = true;
+                    // no se escribe esta línea
+                } else {
+                    writer.write(line);
+                    writer.newLine();
+                }
+            }
+        } catch (IOException e) {
+            log.error("Error eliminando estudiante: " + e.getMessage());
+            return false;
+        }
+
+        // reemplazar archivo original
+        if (deleted) {
+            if (!students.delete()) {
+                log.error("No se pudo eliminar el archivo original");
+                return false;
+            }
+            if (!temp.renameTo(students)) {
+                log.error("No se pudo renombrar el archivo temporal");
+                return false;
+            }
+        } else {
+            // si no se eliminó, borrar el temporal
+            temp.delete();
+        }
+
+        return deleted;
 
     }
+
 
     @Override
     public Student findById(Long id) {
