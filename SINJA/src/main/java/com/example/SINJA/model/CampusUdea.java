@@ -4,7 +4,7 @@ public enum CampusUdea {
     MEDELLIN,
     APARTADO,
     ANDES,
-    CAUCACIA,
+    CAUCASIA,
     CARMEN_DE_VIBORAL,
     CAREPA,
     ENVIGADO,
