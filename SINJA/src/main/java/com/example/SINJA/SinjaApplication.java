@@ -6,8 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class SinjaApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(SinjaApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(SinjaApplication.class, args);
+    }
 
 }
