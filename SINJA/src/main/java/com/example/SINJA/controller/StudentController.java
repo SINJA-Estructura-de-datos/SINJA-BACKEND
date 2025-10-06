@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@CrossOrigin(origins = "*") // o tu puerto del frontend
+@CrossOrigin(origins = "*") 
 public class StudentController {
 
     private static final Logger log = LoggerFactory.getLogger(StudentController.class);
@@ -23,7 +23,7 @@ public class StudentController {
         try {
             log.info("Entrando al método save con los datos {}", student);
             Student savedStudent = studentService.save(student);
-            return ResponseEntity.ok(savedStudent); // ✅ Devuelve JSON válido
+            return ResponseEntity.ok(savedStudent); 
         } catch (Exception e) {
             log.error("Error al guardar estudiante", e);
             return ResponseEntity.badRequest().build();
@@ -35,9 +35,9 @@ public class StudentController {
         try {
             Student student = studentService.findById(id);
             if (student != null) {
-                return ResponseEntity.ok(student); // ✅ Devuelve JSON válido
+                return ResponseEntity.ok(student); 
             } else {
-                return ResponseEntity.notFound().build(); // ✅ Devuelve 404
+                return ResponseEntity.notFound().build(); // 
             }
         } catch (Exception e) {
             log.error("Error al buscar estudiante", e);
@@ -50,12 +50,12 @@ public class StudentController {
         try {
             boolean eliminado = studentService.deleteById(id);
             if (eliminado) {
-                return ResponseEntity.noContent().build(); // 204 eliminado
+                return ResponseEntity.noContent().build(); 
             } else {
-                return ResponseEntity.notFound().build(); // 404 si no existe
+                return ResponseEntity.notFound().build(); 
             }
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().build(); // 500 si falla
+            return ResponseEntity.internalServerError().build(); 
         }
     }
 }
