@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@CrossOrigin(origins = "*") 
+@CrossOrigin(origins = "*") // o tu puerto del frontend
 public class StudentController {
 
     private static final Logger log = LoggerFactory.getLogger(StudentController.class);
@@ -23,7 +23,7 @@ public class StudentController {
         try {
             log.info("Entrando al método save con los datos {}", student);
             Student savedStudent = studentService.save(student);
-            return ResponseEntity.ok(savedStudent); 
+            return ResponseEntity.ok(savedStudent); // ✅ Devuelve JSON válido
         } catch (Exception e) {
             log.error("Error al guardar estudiante", e);
             return ResponseEntity.badRequest().build();
@@ -35,9 +35,9 @@ public class StudentController {
         try {
             Student student = studentService.findById(id);
             if (student != null) {
-                return ResponseEntity.ok(student); 
+                return ResponseEntity.ok(student); // ✅ Devuelve JSON válido
             } else {
-                return ResponseEntity.notFound().build(); // 
+                return ResponseEntity.notFound().build(); // ✅ Devuelve 404
             }
         } catch (Exception e) {
             log.error("Error al buscar estudiante", e);
@@ -50,12 +50,12 @@ public class StudentController {
         try {
             boolean eliminado = studentService.deleteById(id);
             if (eliminado) {
-                return ResponseEntity.noContent().build(); 
+                return ResponseEntity.noContent().build(); // 204 eliminado
             } else {
-                return ResponseEntity.notFound().build(); 
+                return ResponseEntity.notFound().build(); // 404 si no existe
             }
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().build(); 
+            return ResponseEntity.internalServerError().build(); // 500 si falla
         }
     }
 }
