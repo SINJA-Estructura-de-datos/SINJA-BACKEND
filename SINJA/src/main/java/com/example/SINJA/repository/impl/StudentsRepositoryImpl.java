@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -48,7 +49,9 @@ public class StudentsRepositoryImpl implements StudentsRepository {
                     student.getDegree() + "\t" +
                     student.getPlace().name() + "\t" +
                     student.getScoreAdmision() + "\n";
-            raf.writeBytes(register);
+
+            byte[] data = register.getBytes(StandardCharsets.UTF_8);
+            raf.write(data);
 
 
             index.put(String.valueOf(student.getId()), pos);
@@ -135,6 +138,7 @@ public class StudentsRepositoryImpl implements StudentsRepository {
             raf.seek(pos);
             String linea = raf.readLine();
             if (linea != null) {
+                linea = new String(linea.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
                 String[] campos = linea.split("\t");
                 return new Student(
                         Long.parseLong(campos[0]),
@@ -145,6 +149,7 @@ public class StudentsRepositoryImpl implements StudentsRepository {
                         CampusUdea.valueOf(campos[5]),
                         Integer.parseInt(campos[6])
                 );
+
             }
         } catch (IOException e) {
             log.error("Error al leer el estudiante: " + e.getMessage());
@@ -168,6 +173,7 @@ public class StudentsRepositoryImpl implements StudentsRepository {
                 raf.seek(pos);
                 String linea = raf.readLine();
                 if (linea != null) {
+                    linea = new String(linea.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
                     String[] campos = linea.split("\t");
                     resultado.add(new Student(
                             Long.parseLong(campos[0]),
@@ -245,10 +251,8 @@ public class StudentsRepositoryImpl implements StudentsRepository {
     }
 
     private void writeAggregatedIndexCampus() {
-        // escribe archivo temporal y lo mueve (atomic-ish)
         File tmp = new File(indexCampusTxt + ".tmp");
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(tmp))) {
-            // ordenar claves para reproducibilidad opcional
             List<String> claves;
             synchronized (indexCampus) {
                 claves = new ArrayList<>(indexCampus.keySet());
@@ -261,7 +265,6 @@ public class StudentsRepositoryImpl implements StudentsRepository {
                 }
                 if (posiciones.isEmpty()) continue;
                 Collections.sort(posiciones);
-                // ejemplo: CAUCASIA|[0,60,182]
                 bw.write(campus + "|" + posiciones.toString());
                 bw.newLine();
             }
@@ -298,14 +301,11 @@ public class StudentsRepositoryImpl implements StudentsRepository {
     private void rebuildIndicesFromStudents() {
         index.clear();
         indexCampus.clear();
-
         File f = new File(studentsTxt);
         if (!f.exists()) {
             log.warn("Archivo students no existe cuando se intenta reconstruir índices");
             return;
         }
-
-
 
         try (RandomAccessFile raf = new RandomAccessFile(f, "r")) {
             long pos;
