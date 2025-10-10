@@ -1,11 +1,14 @@
 package com.example.SINJA.controller;
 
+import com.example.SINJA.model.CampusUdea;
 import com.example.SINJA.model.Student;
 import com.example.SINJA.service.StudentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "*") // o tu puerto del frontend
@@ -35,9 +38,24 @@ public class StudentController {
         try {
             Student student = studentService.findById(id);
             if (student != null) {
-                return ResponseEntity.ok(student); // ✅ Devuelve JSON válido
+                return ResponseEntity.ok(student);
             } else {
-                return ResponseEntity.notFound().build(); // ✅ Devuelve 404
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            log.error("Error al buscar estudiante", e);
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/search/campus")
+    public ResponseEntity<List<Student>> searchByCampus(@RequestParam CampusUdea campusUdea){
+        try {
+            List<Student> students = studentService.findByCampus(campusUdea);
+            if (students != null) {
+                return ResponseEntity.ok(students);
+            } else {
+                return ResponseEntity.notFound().build();
             }
         } catch (Exception e) {
             log.error("Error al buscar estudiante", e);
