@@ -2,7 +2,9 @@ package com.example.SINJA.repository.impl;
 
 import com.example.SINJA.model.CampusUdea;
 import com.example.SINJA.model.Student;
+import com.example.SINJA.model.Tuple;
 import com.example.SINJA.repository.StudentsRepository;
+import com.example.SINJA.treeB.TreeBPlus;
 import org.springframework.stereotype.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +23,7 @@ public class StudentsRepositoryImpl implements StudentsRepository {
     private final String indexTxt = "SINJA/src/main/resources/Index";
     private final String indexCampusTxt = "SINJA/src/main/resources/IndexCampus";
 
+    private final TreeBPlus treeBPlus = new TreeBPlus();
     private final Map<String, Long> index = new HashMap<>();
     private final Map<String, List<Long>> indexCampus = new HashMap<>();
 
@@ -28,12 +31,14 @@ public class StudentsRepositoryImpl implements StudentsRepository {
         loadIndex();
         loadIndexCampus();
         rebuildIndicesFromStudents();
+        rebuildTreeBPlus();
+        treeBPlus.printTree();
     }
 
 
     @Override
     public Student save(Student student) {
-        if (index.containsKey(String.valueOf(student.getId()))) {
+        if (findById(student.getId()) != null) {
             log.warn("El estudiante con ID " + student.getId() + " ya existe.");
             return null;
         }
@@ -54,11 +59,13 @@ public class StudentsRepositoryImpl implements StudentsRepository {
             raf.write(data);
 
 
-            index.put(String.valueOf(student.getId()), pos);
+            /*index.put(String.valueOf(student.getId()), pos);
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(indexTxt, true))) {
                 bw.write(student.getId() + "|" + pos);
                 bw.newLine();
-            }
+            }*/
+            Tuple key = new Tuple(student.getId(), pos);
+            treeBPlus.insert(key);
 
             indexCampus.computeIfAbsent(student.getPlace().name(), k -> new ArrayList<>())
                     .add(pos);
@@ -127,11 +134,13 @@ public class StudentsRepositoryImpl implements StudentsRepository {
 
 
     public Student findById(Long id) {
-        String code = String.valueOf(id);
-        Long pos = index.get(code);
-        if (pos == null) {
+        Tuple tuple = treeBPlus.search(id);
+        Long pos;
+        if (tuple==null) {
             log.warn("No se encontró ningún estudiante con ID " + id);
             return null;
+        }else{
+            pos = tuple.getAddress();
         }
 
         try (RandomAccessFile raf = new RandomAccessFile(studentsTxt, "r")) {
@@ -154,6 +163,7 @@ public class StudentsRepositoryImpl implements StudentsRepository {
         } catch (IOException e) {
             log.error("Error al leer el estudiante: " + e.getMessage());
         }
+
 
         return null;
     }
@@ -327,6 +337,26 @@ public class StudentsRepositoryImpl implements StudentsRepository {
         writeIndexFile();
         writeAggregatedIndexCampus();
         log.info("Índices reconstruidos desde archivo Students. registros=" + index.size());
+    }
+
+    public void rebuildTreeBPlus(){
+        try(RandomAccessFile reader = new RandomAccessFile(studentsTxt, "r")){
+            String line;
+            boolean flag = true;
+            while(flag) {
+                Long pos = reader.getFilePointer();
+                if ((line = reader.readLine()) != null) {
+                    String[] data = line.split("\t");
+                    Tuple tuple = new Tuple(Long.parseLong(data[0]), pos);
+                    treeBPlus.insert(tuple);
+                }else{
+                    flag = false;
+                }
+            }
+
+        }catch (IOException e){
+            log.error("No se realizó la reconstrucción del árbol" + e.getMessage());
+        }
     }
 
 }
