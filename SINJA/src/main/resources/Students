@@ -1,9 +1,50 @@
-10	Camilo	Perez	PR	Ingeniería de Sistemas	MEDELLIN	70
-20	pedro	malo	turbo	Ingeniería Aeroespacial	MEDELLIN	50
-60	milena	popu	bello	Ingeniería Ambiental	MEDELLIN	90
-999	Test	Usuario	Test	Test	MEDELLIN	85
-1001	TestUser	Frontend	Test	Ingeniería de Sistemas	MEDELLIN	85
-3001	TestUser	Prueba	Medellín	Ingeniería de Sistemas	MEDELLIN	85
-4001	TestMinimo	Usuario	Test	IngenierÃ­a de Sistemas	MEDELLIN	85
-4001	TestMinimo	Usuario	Test	IngenierÃ­a de Sistemas	MEDELLIN	85
-777	manu	oso	bolivar	Ingeniería Química	MEDELLIN	90
+12345	Sebastián	Barrera Ruiz	Ciudad Bolívar	Ingeniería Bioquímica	MEDELLIN	48
+12346	Carlos	Gómez	Puerto Berrío	Ingeniería Bioquímica	CAUCASIA	20
+12347	Laura	Torres	Carepa	Ingeniería Bioquímica	MEDELLIN	22
+12348	Andrés	Pérez	Apartadó	Ingeniería Bioquímica	TURBO	22
+12349	Valeria	López	Santa Fe de Antioquia	Ingeniería Bioquímica	PUERTO_BERRIO	20
+12350	Juan	Restrepo	Apartadó	Ingeniería Bioquímica	PUERTO_BERRIO	24
+12351	Juliana	Salazar	Apartadó	Ingeniería Bioquímica	PUERTO_BERRIO	18
+12352	Felipe	Hernández	Medellín	Ingeniería Bioquímica	APARTADO	22
+12353	Natalia	Ríos	Caucasia	Ingeniería Bioquímica	ENVIGADO	24
+12354	Daniel	Álvarez	Envigado	Ingeniería Bioquímica	TURBO	18
+12355	Sofía	Montoya	Envigado	Ingeniería Bioquímica	MEDELLIN	20
+12356	Camilo	Cárdenas Silva	Medellín	Ingeniería Bioquímica	CARMEN_DE_VIBORAL	21
+12357	Manuela	Arias Blandón	Envigado	Ingeniería Bioquímica	CAREPA	24
+12358	Jorge	Londoño Henao	Carepa	Ingeniería Bioquímica	APARTADO	23
+12359	Mariana	Zapata Pérez	Medellín	Ingeniería Bioquímica	APARTADO	18
+12360	Esteban	Vélez Ramírez	Medellín	Ingeniería Bioquímica	APARTADO	25
+12361	Paula	Quintero Lara	Carmen de Viboral	Ingeniería Bioquímica	ENVIGADO	25
+12362	Lina	Herrera Serna	Envigado	Ingeniería Bioquímica	MEDELLIN	21
+12363	Mateo	Zuluaga Rúa	Envigado	Ingeniería Bioquímica	ANDES	25
+12364	Daniela	Bermúdez Hoyos	Medellín	Ingeniería Bioquímica	MEDELLIN	24
+12365	Adrián	Muñoz Echeverri	Santa Fe de Antioquia	Ingeniería Bioquímica	CARMEN_DE_VIBORAL	20
+12366	Sara	Castaño Londoño	Carepa	Ingeniería Bioquímica	CARMEN_DE_VIBORAL	22
+12367	Kevin	Morales Toro	Andes	Ingeniería Bioquímica	TURBO	18
+12368	Simón	Ortiz Palacio	Medellín	Ingeniería Bioquímica	ANDES	23
+12369	Camila	Gaviria Montoya	Santa Fe de Antioquia	Ingeniería Bioquímica	ANDES	23
+12370	Santiago	Roldán Velásquez	Carepa	Ingeniería Bioquímica	SANTA_FE_ANTIOQUIA	24
+12371	Pablo	Tobón Bedoya	Turbo	Ingeniería Bioquímica	MEDELLIN	19
+12372	Luisa	Giraldo Franco	Puerto Berrío	Ingeniería Bioquímica	CARMEN_DE_VIBORAL	23
+12373	Diana	Muñetón Hoyos	Medellín	Ingeniería Bioquímica	PUERTO_BERRIO	20
+12374	Tomás	Barrientos Lema	Carepa	Ingeniería Bioquímica	CAREPA	20
+12375	Julieta	Viafara Rivas	Envigado	Ingeniería Bioquímica	APARTADO	20
+12376	Oscar	Correa Zapata	Carmen de Viboral	Ingeniería Bioquímica	MEDELLIN	24
+12377	Isabella	Montiel García	Puerto Berrío	Ingeniería Bioquímica	CARMEN_DE_VIBORAL	25
+12378	Cristian	Lema Cifuentes	Santa Fe de Antioquia	Ingeniería Bioquímica	APARTADO	18
+12379	Ana María	Prieto Jaramillo	Andes	Ingeniería Bioquímica	CAREPA	25
+12380	Mauro	Zapata Urrego	Medellín	Ingeniería Bioquímica	CAREPA	21
+12381	Karol	Sánchez Villa	Santa Fe de Antioquia	Ingeniería Bioquímica	CAUCASIA	25
+12382	Miguel	Osorio Londoño	Envigado	Ingeniería Bioquímica	APARTADO	24
+12383	Adriana	Duque Ciro	Medellín	Ingeniería Bioquímica	ENVIGADO	20
+12384	Brayan	Márquez Arroyave	Envigado	Ingeniería Bioquímica	CAREPA	25
+12385	Tatiana	Pérez Gómez	Carmen de Viboral	Ingeniería Bioquímica	CAREPA	21
+12386	Jonathan	Hernández Soto	Medellín	Ingeniería Bioquímica	CAUCASIA	22
+12387	Pedro	Jiménez Arango	Caucasia	Ingeniería Bioquímica	MEDELLIN	22
+12388	Angie	Vega Moreno	Carmen de Viboral	Ingeniería Bioquímica	TURBO	24
+12389	Samuel	Barrera León	Envigado	Ingeniería Bioquímica	PUERTO_BERRIO	21
+12390	Mónica	Salinas Mejía	Andes	Ingeniería Bioquímica	CARMEN_DE_VIBORAL	18
+12391	Gonzalo	Cruz Peña	Envigado	Ingeniería Bioquímica	SANTA_FE_ANTIOQUIA	23
+12392	Raquel	Alzate Ríos	Medellín	Ingeniería Bioquímica	PUERTO_BERRIO	24
+12393	Iván	Roa Castro	Carepa	Ingeniería Bioquímica	PUERTO_BERRIO	22
+12394	Tamara	Bravo Niño	Envigado	Ingeniería Bioquímica	SANTA_FE_ANTIOQUIA	21
