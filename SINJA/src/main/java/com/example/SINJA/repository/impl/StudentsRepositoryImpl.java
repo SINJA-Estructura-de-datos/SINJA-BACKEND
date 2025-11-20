@@ -10,9 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 @Repository
@@ -20,19 +17,14 @@ public class StudentsRepositoryImpl implements StudentsRepository {
 
     private static final Logger log = LoggerFactory.getLogger(StudentsRepositoryImpl.class);
     private final String studentsTxt = "SINJA/src/main/resources/Students";
-    private final String indexTxt = "SINJA/src/main/resources/Index";
-    private final String indexCampusTxt = "SINJA/src/main/resources/IndexCampus";
 
-    private final TreeBPlus treeBPlus = new TreeBPlus();
-    private final Map<String, Long> index = new HashMap<>();
-    private final Map<String, List<Long>> indexCampus = new HashMap<>();
+    private final TreeBPlus treeBPlusId = new TreeBPlus();
+    private final TreeBPlus treBPlusCampus = new TreeBPlus();
 
     public StudentsRepositoryImpl() {
-        loadIndex();
-        loadIndexCampus();
-        rebuildIndicesFromStudents();
         rebuildTreeBPlus();
-        treeBPlus.printTree();
+        treeBPlusId.printTree();
+        treBPlusCampus.printTree();
     }
 
 
@@ -58,23 +50,12 @@ public class StudentsRepositoryImpl implements StudentsRepository {
             byte[] data = register.getBytes(StandardCharsets.UTF_8);
             raf.write(data);
 
-
-            /*index.put(String.valueOf(student.getId()), pos);
-            try (BufferedWriter bw = new BufferedWriter(new FileWriter(indexTxt, true))) {
-                bw.write(student.getId() + "|" + pos);
-                bw.newLine();
-            }*/
             Tuple key = new Tuple(student.getId(), pos);
-            treeBPlus.insert(key);
+            treeBPlusId.insert(key);
 
-            indexCampus.computeIfAbsent(student.getPlace().name(), k -> new ArrayList<>())
-                    .add(pos);
-            try (BufferedWriter bw1 = new BufferedWriter(new FileWriter(indexCampusTxt, true))) {
-                bw1.write(student.getPlace().name() + "|" + pos);
-                bw1.newLine();
-            }
-
-            writeAggregatedIndexCampus();
+            Long campus = (long) student.getPlace().getCode();
+            Tuple campusKey = new Tuple(campus, student.getId());
+            treBPlusCampus.insert(campusKey);
 
             log.info("Estudiante guardado correctamente en posición: " + pos);
 
@@ -134,7 +115,7 @@ public class StudentsRepositoryImpl implements StudentsRepository {
 
 
     public Student findById(Long id) {
-        Tuple tuple = treeBPlus.search(id);
+        Tuple tuple = treeBPlusId.searchId(id);
         Long pos;
         if (tuple==null) {
             log.warn("No se encontró ningún estudiante con ID " + id);
@@ -170,174 +151,27 @@ public class StudentsRepositoryImpl implements StudentsRepository {
 
     @Override
     public List<Student> findByCampus(CampusUdea campusUdea) {
-        List<Long> posiciones = indexCampus.get(campusUdea.name());
-        List<Student> resultado = new ArrayList<>();
+        List<Tuple> keys = treBPlusCampus.searchCampus((long) campusUdea.getCode());
+        List<Student> students = new ArrayList<>();
+        List<Long> ids = new ArrayList<>();
 
-        if (posiciones == null) {
+
+        if (keys == null) {
             log.warn("No se encontraron estudiantes para el campus " + campusUdea);
-            return resultado;
+            return students;
         }
 
-        try (RandomAccessFile raf = new RandomAccessFile(studentsTxt, "r")) {
-            for (Long pos : posiciones) {
-                raf.seek(pos);
-                String linea = raf.readLine();
-                if (linea != null) {
-                    linea = new String(linea.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
-                    String[] campos = linea.split("\t");
-                    resultado.add(new Student(
-                            Long.parseLong(campos[0]),
-                            campos[1],
-                            campos[2],
-                            campos[3],
-                            campos[4],
-                            CampusUdea.valueOf(campos[5]),
-                            Integer.parseInt(campos[6])
-                    ));
-                }
-            }
-        } catch (IOException e) {
-            log.error("Error al leer los estudiantes del campus: " + e.getMessage());
+        for(int i = 0; i < keys.size(); i++){
+            ids.add(keys.get(i).getAddress());
         }
 
-        return resultado;
+        for(int j = 0; j < ids.size(); j++){
+            students.add(findById(ids.get(j)));
+        }
+        return students;
+
     }
 
-
-    private void loadIndex() {
-        try (BufferedReader br = new BufferedReader(new FileReader(indexTxt))) {
-            String linea;
-            while ((linea = br.readLine()) != null) {
-                String[] parts = linea.split("\\|");
-                if (parts.length == 2) {
-                    String id = parts[0];
-                    long pos = Long.parseLong(parts[1]);
-                    index.put(id, pos);
-                }
-            }
-            log.info("Archivo cargado en memoria con:" + index.size() + " registros");
-        } catch (FileNotFoundException e) {
-            log.warn("No se encontró el archivo de índice");
-        } catch (IOException e) {
-            log.error("Error al cargar el índice: " + e.getMessage());
-        }
-    }
-
-    private void loadIndexCampus() {
-        File f = new File(indexCampusTxt);
-        if (!f.exists()) {
-            log.warn("No se encontró el archivo de índice de campus");
-            return;
-        }
-
-        try (BufferedReader br = new BufferedReader(new FileReader(f))) {
-            String linea;
-            while ((linea = br.readLine()) != null) {
-                if (linea.trim().isEmpty()) continue;
-                String[] parts = linea.split("\\|", 2);
-                if (parts.length != 2) continue;
-                String campus = parts[0];
-                String rest = parts[1].trim();
-
-                if (rest.startsWith("[") && rest.endsWith("]")) {
-                    String inner = rest.substring(1, rest.length() - 1).trim();
-                    if (!inner.isEmpty()) {
-                        String[] nums = inner.split("\\s*,\\s*");
-                        for (String n : nums) {
-                            long pos = Long.parseLong(n);
-                            indexCampus.computeIfAbsent(campus, k -> new ArrayList<>()).add(pos);
-                        }
-                    }
-                } else {
-                    // formato legacy: una línea por entrada: CAUCASIA|60
-                    long pos = Long.parseLong(rest);
-                    indexCampus.computeIfAbsent(campus, k -> new ArrayList<>()).add(pos);
-                }
-            }
-            log.info("Índice de campus cargado con: " + indexCampus.size() + " claves");
-        } catch (IOException e) {
-            log.error("Error al cargar índice de campus: " + e.getMessage());
-        }
-    }
-
-    private void writeAggregatedIndexCampus() {
-        File tmp = new File(indexCampusTxt + ".tmp");
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(tmp))) {
-            List<String> claves;
-            synchronized (indexCampus) {
-                claves = new ArrayList<>(indexCampus.keySet());
-            }
-            Collections.sort(claves);
-            for (String campus : claves) {
-                List<Long> posiciones;
-                synchronized (indexCampus) {
-                    posiciones = new ArrayList<>(indexCampus.getOrDefault(campus, Collections.emptyList()));
-                }
-                if (posiciones.isEmpty()) continue;
-                Collections.sort(posiciones);
-                bw.write(campus + "|" + posiciones.toString());
-                bw.newLine();
-            }
-        } catch (IOException e) {
-            log.error("Error al escribir indexCampus temporal: " + e.getMessage());
-            return;
-        }
-
-        try {
-            Files.move(tmp.toPath(), Paths.get(indexCampusTxt), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            log.error("Error al mover archivo temporal de índice de campus: " + e.getMessage());
-        }
-    }
-
-    private void writeIndexFile() {
-        File tmp = new File(indexTxt + ".tmp");
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(tmp))) {
-            for (Map.Entry<String, Long> e : index.entrySet()) {
-                bw.write(e.getKey() + "|" + e.getValue());
-                bw.newLine();
-            }
-        } catch (IOException e) {
-            log.error("Error al escribir index temporal: " + e.getMessage());
-            return;
-        }
-        try {
-            Files.move(tmp.toPath(), Paths.get(indexTxt), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            log.error("Error al mover archivo temporal de índice: " + e.getMessage());
-        }
-    }
-
-    private void rebuildIndicesFromStudents() {
-        index.clear();
-        indexCampus.clear();
-        File f = new File(studentsTxt);
-        if (!f.exists()) {
-            log.warn("Archivo students no existe cuando se intenta reconstruir índices");
-            return;
-        }
-
-        try (RandomAccessFile raf = new RandomAccessFile(f, "r")) {
-            long pos;
-            String line;
-            while ((pos = raf.getFilePointer()) < raf.length() && (line = raf.readLine()) != null) {
-                String[] campos = line.split("\t");
-                if (campos.length >= 7) {
-                    String id = campos[0];
-                    index.put(id, pos);
-                    String campus = campos[5];
-                    indexCampus.computeIfAbsent(campus, k -> new ArrayList<>()).add(pos);
-                }
-            }
-        } catch (IOException e) {
-            log.error("Error reconstruyendo índices desde Students: " + e.getMessage());
-        }
-
-        // persistir índices reconstruidos
-        writeIndexFile();
-        writeAggregatedIndexCampus();
-        log.info("Índices reconstruidos desde archivo Students. registros=" + index.size());
-    }
 
     public void rebuildTreeBPlus(){
         try(RandomAccessFile reader = new RandomAccessFile(studentsTxt, "r")){
@@ -346,9 +180,20 @@ public class StudentsRepositoryImpl implements StudentsRepository {
             while(flag) {
                 Long pos = reader.getFilePointer();
                 if ((line = reader.readLine()) != null) {
-                    String[] data = line.split("\t");
-                    Tuple tuple = new Tuple(Long.parseLong(data[0]), pos);
-                    treeBPlus.insert(tuple);
+                    String[] campos = line.split("\t");
+                    Student student = new Student(
+                            Long.parseLong(campos[0]),
+                            campos[1],
+                            campos[2],
+                            campos[3],
+                            campos[4],
+                            CampusUdea.valueOf(campos[5]),
+                            Integer.parseInt(campos[6]));
+                    Tuple tupleId = new Tuple(student.getId(), pos);
+                    treeBPlusId.insert(tupleId);
+
+                    Tuple tupleCampus = new Tuple((long) student.getPlace().getCode(), student.getId());
+                    treBPlusCampus.insert(tupleCampus);
                 }else{
                     flag = false;
                 }
