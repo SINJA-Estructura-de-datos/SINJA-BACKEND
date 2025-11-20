@@ -4,6 +4,7 @@ import com.example.SINJA.model.Node;
 import com.example.SINJA.model.Tuple;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 
 public class TreeBPlus {
 
@@ -39,13 +40,14 @@ public class TreeBPlus {
                         leftAux.getData().add(aux.get(i));
                     }
 
-                    for (int i = node.getOrder(); i < aux.size(); i++){
+                    for (int i = node.getOrder() + 1; i < aux.size(); i++){
                         rightAux.getData().add(aux.get(i));
                     }
                     rootAux.getLinks().add(leftAux);
                     rootAux.getLinks().add(rightAux);
                     leftAux.setFather(rootAux);
                     rightAux.setFather(rootAux);
+                    sheetLinks(node, leftAux, rightAux);
                     this.root = rootAux;
                 }else{
                     //Si la hoja no era una raiz, miramos si el padre tiene espacio y le pasamos la clave
@@ -69,14 +71,16 @@ public class TreeBPlus {
                         father.getData().sort(Comparator.comparing(Tuple::getKey));
 
                         int oldSheet = father.getLinks().indexOf(node);
-                        father.getLinks().remove(oldSheet);
-                        father.getLinks().add(oldSheet, leftAux);
+                        father.getLinks().set(oldSheet, leftAux);
                         father.getLinks().add(oldSheet + 1, rightAux);
                         leftAux.setFather(father);
                         rightAux.setFather(father);
+                        sheetLinks(node, leftAux, rightAux);
                     }else{
                         //Si el padre no tiene espacio debemos hacer splits de nodos internos
+                        sheetLinks(node, leftAux, rightAux);
                         splitInternal(father, split, leftAux, rightAux, node);
+
 
                     }
 
@@ -95,11 +99,6 @@ public class TreeBPlus {
 
 
     private void splitInternal(Node node, Tuple split, Node nodeLeft, Node nodeRight, Node lastNode) {
-
-        // ==========================================
-        // 1. Copiar claves e hijos del nodo a dividir
-        // ==========================================
-        // Crear arrays para las tuplas y links de nodo a dividir
         ArrayList<Tuple> tempKeys = new ArrayList<>(node.getData());
         ArrayList<Node> tempChildren = new ArrayList<>(node.getLinks());
 
@@ -111,8 +110,7 @@ public class TreeBPlus {
         int oldChildIndex = tempChildren.indexOf(lastNode);
 
         // Reemplazar el hijo viejo por los dos nuevos
-        tempChildren.remove(oldChildIndex);
-        tempChildren.add(oldChildIndex, nodeLeft);
+        tempChildren.set(oldChildIndex, nodeLeft);
         tempChildren.add(oldChildIndex + 1, nodeRight);
 
         // Elegir la clave que va subir
@@ -187,9 +185,40 @@ public class TreeBPlus {
         }
     }
 
+    private void sheetLinks(Node node, Node nodeLeft, Node nodeRight) {
+
+        Node prev = node.getSheetLinksBack();
+        Node next = node.getSheetLinksNext();
+
+        // 1. Enlazar L y R entre sí
+        nodeLeft.setSheetLinksNext(nodeRight);
+        nodeRight.setSheetLinksBack(nodeLeft);
+
+        // 2. Conectar con el anterior
+        if (prev != null) {
+            prev.setSheetLinksNext(nodeLeft);
+            nodeLeft.setSheetLinksBack(prev);
+        }
+
+        // 3. Conectar con el siguiente
+        nodeRight.setSheetLinksNext(next);
+        if (next != null) {
+            next.setSheetLinksBack(nodeRight);
+            nodeRight.setSheetLinksNext(next);
+        }
+
+        // 4. Limpiar enlaces del nodo viejo
+        node.setSheetLinksBack(null);
+        node.setSheetLinksNext(null);
+    }
 
 
-    private Tuple search(Long key, Node node) {
+    public void insert(Tuple data) {
+        insert(data, this.root);
+    }
+
+
+    private Tuple searchId(Long key, Node node) {
         if (node.getLinks().isEmpty()) {
 
             for (Tuple t : node.getData()) {
@@ -207,18 +236,47 @@ public class TreeBPlus {
                 break;
             }
         }
-        return search(key, node.getLinks().get(count));
+        return searchId(key, node.getLinks().get(count));
     }
 
-    public Tuple search(Long key) {
-        return search(key, this.root);
+    public Tuple searchId(Long key) {
+        return searchId(key, this.root);
     }
 
-    public void insert(Tuple data) {
-        insert(data, this.root);
+    private List<Tuple> searchCampus(Long key, Node node){
+        // Buscar la hoja donde debería empezar
+        if (!node.getLinks().isEmpty()) {
+            int i = 0;
+            while (i < node.getData().size() && key > node.getData().get(i).getKey()) {
+                i++;
+            }
+            return searchCampus(key, node.getLinks().get(i));
+        }
+
+        // Estamos en una hoja
+        List<Tuple> tuples = new ArrayList<>();
+        Node current = node;
+
+        // Recorrer hojas hacia adelante
+        while (current != null) {
+            for (Tuple t : current.getData()) {
+                if (t.getKey().equals(key)) {
+                    tuples.add(t);
+                }
+                else if (t.getKey() > key) {
+                    return tuples;
+                }
+            }
+            current = current.getSheetLinksNext();
+        }
+
+        return tuples;
     }
 
 
+    public List<Tuple> searchCampus(Long key) {
+        return searchCampus(key, this.root);
+    }
 
    public void printTree() {
         printRec(root, 1);

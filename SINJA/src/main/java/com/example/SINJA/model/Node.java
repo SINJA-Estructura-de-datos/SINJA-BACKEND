@@ -11,7 +11,8 @@ public class Node {
     ArrayList<Tuple> data;
     ArrayList<Node> links;
     Node father;
-    Node sheetLinks;
+    Node sheetLinksNext;
+    Node sheetLinksBack;
     int order;
 
 
@@ -19,7 +20,8 @@ public class Node {
         this.order = 2;
         data = new ArrayList<>(2 * order);
         links = new ArrayList<>(2 * order - 1);
-        sheetLinks = null;
+        sheetLinksNext = null;
+        sheetLinksBack = null;
         father = null;
     }
 
